@@ -10,7 +10,21 @@ import (
 )
 
 func LoginHandler(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
+		var user models.User
+		if err := ctx.ShouldBindJSON(&user); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		token, err := services.LoginUser(db, user.Username, user.Password)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"Token": token})
 
 	}
 }
